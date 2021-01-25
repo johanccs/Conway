@@ -9,6 +9,8 @@ namespace Conway.Interfaces
 
         void Start();
 
+        void Start(bool @overwrite);
+
         void PopulateBoard(List<Cell>cells);
     }
 }
