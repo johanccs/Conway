@@ -11,6 +11,9 @@ namespace Conway.Enums
 
         public CellStateEnums()
         {
+            if (_cellStatus.ContainsKey(1) || _cellStatus.ContainsKey(2))
+                return;
+
             _cellStatus.Add(1, ALIVE);
             _cellStatus.Add(2, DEAD);
         }

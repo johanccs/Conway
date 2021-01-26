@@ -31,8 +31,11 @@ namespace Conway.Classes
 
         public string GetValueByPoint(Point p)
         {
-            if (p.Col >= _cols)
+            if (p.Col == _cols)
                 p.SetColSize(_cols-1);
+
+            if (p.Row == _rows)
+                p.SetRowSize(_rows - 1);
 
             var val = InternalArray[p.Row, p.Col];
 

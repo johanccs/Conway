@@ -10,26 +10,37 @@ namespace Conway.Classes
 {
     public class Matrix : IMatrix
     {
+        #region Readonly Fields
+
         private readonly int rows;
         private readonly int cols;
-
-        private readonly CellStateEnums cellEnums;
-
-        //private readonly string[,] arr1;
-
         private readonly ArrayWrapper _aw;
-        
+
+        #endregion
+
+        #region Fields
+
+        private CellStateEnums cellEnums;
+
+        #endregion
+
+        #region Constructor
         public Matrix(int rows, int cols)
         {
+            if (rows < 0 || cols < 0)
+                throw new ArgumentException("Matrix dimensions cannot be smaller than 0");
+
             this.rows = rows;
             this.cols = cols;
 
             cellEnums = new CellStateEnums();
-
-            //arr1 = new string[rows, cols];
-
+        
             _aw = new ArrayWrapper(rows, cols);
         }
+
+        #endregion
+
+        #region Methods
 
         public void DrawBoardDimension()
         {
@@ -61,11 +72,6 @@ namespace Conway.Classes
             }
         }
 
-        public void PopulateBoard(List<Cell> cells)
-        {
-            throw new System.NotImplementedException();
-        }
-
         public void Start()
         {
             Thread.Sleep(500);
@@ -87,59 +93,35 @@ namespace Conway.Classes
             }
         }
 
-        public void Start(bool @overwrite)
-        {
-            int i, j;
-            string[,] arr1 = new string[rows, cols];
-
-            for (i = 0; i < rows; i++)
-            {
-                Console.Write("\n");
-
-                for (j = 0; j < cols; j++)
-                {
-                    Thread.Sleep(400);
-                    Console.Write("{0}x\t", arr1[i, j]);
-                }
-
-                Console.Write("\n\n");
-            }
-        }
+        #endregion
 
         #region Private Methods
 
         private string GetNeighbours(Point p, string[,] arr)       
         {
-            Point newPointX = new Point(p.Row, p.Col + 1);
-            Point newPointXX = new Point(p.Row, p.Col + 2);
-            Point newPointXXX = new Point(p.Row, p.Col + 3);
+            List<Point> points = GetSurroundingNeightbours(p);
+            List<string> values = GetSurroundingNeightbourValues(points);
 
-            string currCellValue = _aw.GetValueByPoint(p);
-            string cellValueX = _aw.GetValueByPoint(newPointX);
-            string cellValueXX = _aw.GetValueByPoint(newPointXX);
-            string cellValueXXX = _aw.GetValueByPoint(newPointXXX);
-
+            string currCellValue = _aw.GetValueByPoint(p);         
             //If cell is dead
             if(currCellValue == CellStateEnums.DEAD && 
-                cellValueX == CellStateEnums.ALIVE && 
-                cellValueXX == CellStateEnums.ALIVE && 
-                cellValueXXX == CellStateEnums.ALIVE)
+                GetNrOfLiveNeighbors(CellStateEnums.ALIVE, values.ToArray()) == 3)
             {
                 currCellValue = CellStateEnums.ALIVE;
             }
             else if(currCellValue == CellStateEnums.ALIVE && 
-                    GetNrOfLiveNeighbors(CellStateEnums.ALIVE, cellValueX, cellValueXX, cellValueXXX) < 2)
+                    GetNrOfLiveNeighbors(CellStateEnums.ALIVE,values.ToArray()) < 2)
             {
                 currCellValue = CellStateEnums.DEAD;
             }
             else if(currCellValue == CellStateEnums.ALIVE && 
-                    GetNrOfLiveNeighbors(CellStateEnums.ALIVE, cellValueX, cellValueXX, cellValueXXX) >= 2 && 
-                    GetNrOfLiveNeighbors(CellStateEnums.ALIVE, cellValueX, cellValueXX, cellValueXXX) < 3)
+                    GetNrOfLiveNeighbors(CellStateEnums.ALIVE, values.ToArray()) >= 2 && 
+                    GetNrOfLiveNeighbors(CellStateEnums.ALIVE, values.ToArray()) < 3)
             {
                 currCellValue = CellStateEnums.ALIVE;
             }
             else if(currCellValue == CellStateEnums.ALIVE && 
-                    GetNrOfLiveNeighbors(CellStateEnums.ALIVE, cellValueX, cellValueXX, cellValueXXX) > 3)
+                    GetNrOfLiveNeighbors(CellStateEnums.ALIVE, values.ToArray()) > 3)
             {
                 currCellValue = CellStateEnums.DEAD;
             }
@@ -159,7 +141,89 @@ namespace Conway.Classes
             return counter;
         }
 
-        private Point 
+        private List<Point> GetSurroundingNeightbours(Point p)
+        {
+            List<Point> points = new List<Point>();
+
+            if (p.Row - 1 >= 0 && p.Col - 1 >= 0)
+            {
+                //Valid point on the matrix
+                Point p1 = new Point(p.Row - 1, p.Col - 1);
+
+                points.Add(p1);
+            }
+
+            if (p.Row - 1 >= 0)
+            {
+                //Valid point on the matrix
+                Point p1 = new Point(p.Row - 1, p.Col);
+
+                points.Add(p1);
+            }
+
+            if (p.Row - 1 >= 0 && p.Col + 1 <= cols)
+            {
+                //Valid point on the matrix
+                Point p1 = new Point(p.Row - 1, p.Col + 1);
+
+                points.Add(p1);
+            }
+
+            if (p.Col + 1 <= cols)
+            {
+                //Valid point on the matrix
+                Point p1 = new Point(p.Row, p.Col + 1);
+
+                points.Add(p1);
+            }
+
+            if (p.Row + 1 <= rows && p.Col + 1 <= cols)
+            {
+                //Valid point on the matrix
+                Point p1 = new Point(p.Row + 1, p.Col + 1);
+
+                points.Add(p1);
+            }
+
+            if (p.Row + 1 <= rows)
+            {
+                //Valid point on the matrix
+                Point p1 = new Point(p.Row + 1, p.Col + 1);
+
+                points.Add(p1);
+            }
+
+            if (p.Row + 1 <= rows && p.Col - 1 >= 0)
+            {
+                //Valid point on the matrix
+                Point p1 = new Point(p.Row + 1, p.Col + 1);
+
+                points.Add(p1);
+            }
+
+            if (p.Col - 1 >= 0)
+            {
+                //Valid point on the matrix
+                Point p1 = new Point( p.Row, p.Col - 1);
+
+                points.Add(p1);
+            }
+
+            return points;
+        }
+
+        private List<string> GetSurroundingNeightbourValues(List<Point>points)
+        {
+            var resultList = new List<string>();
+
+            foreach(Point point in points)
+            {
+                var val = _aw.GetValueByPoint(point);
+                resultList.Add(val);
+            }
+
+            return resultList;
+        }
 
         #endregion
     }

@@ -15,5 +15,10 @@
         {
             Col = size;
         }
+
+        public void SetRowSize(int size)
+        {
+            Row = size;
+        }
     }
 }

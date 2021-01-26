@@ -12,6 +12,8 @@ namespace Conway
         static int rows = 0;
         static int cols = 0;
 
+        private static Matrix matrix; 
+
         #endregion
 
         static void Main(string[] args)
@@ -21,11 +23,26 @@ namespace Conway
             var restartAnswer = GetStartResponse();
             if (restartAnswer == "Y" || restartAnswer == "y")
             {
-                //todo: #JP #25-01-2021
-                //Console.Clear();
+                Console.Clear();
                 StartGame();
             }
+            else
+            {
+                Console.Write("Thanks for playing Conways game. Press [e]xit to stop: ");
+                var exitCode = Console.ReadLine();
+                if (exitCode.ToString().ToLower().Equals("e"))
+                {
+                    Environment.Exit(0);
+                }
+                else
+                {
+                    Console.Clear();
+                    StartGame();
+                }
+            }
         }
+
+        #region Private Methods
 
         private static void StartGame()
         {
@@ -37,7 +54,15 @@ namespace Conway
 
             Console.WriteLine("Setting up matrix board preview. Please wait");
 
-            var matrix = new Matrix(rows, cols);
+            try
+            {
+                matrix = new Matrix(rows, cols);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                ExitGraceFullyOnException();
+            }
 
             Console.WriteLine("\n");
 
@@ -51,8 +76,9 @@ namespace Conway
                 for (int x = 1; x <= iterations; x++)
                 {
                     Thread.Sleep(1000);
-                    //todo: #JP #25-01-2021
-                    //Console.Clear();                  
+
+                    Console.Clear();
+                    
                     PrintHeader();
                     Console.WriteLine("Matrix board preview");
 
@@ -61,6 +87,14 @@ namespace Conway
                     matrix.Start();
                 }
             }
+        }
+
+        private static void ExitGraceFullyOnException()
+        {
+            Console.Write("Thanks for playing Conways game. Press any key to exit: ");
+            var exitCode = Console.ReadLine();
+
+            Environment.Exit(0);
         }
 
         private static void PrintIterationMessage(int iteration, int totalIterations)
@@ -105,5 +139,7 @@ namespace Conway
 
             return answer;
         }
+
+        #endregion
     }
 }
