@@ -22,12 +22,16 @@ namespace Conway.Classes
 
         private CellStateEnums cellEnums;
 
+        private int i;
+        private int j;
+
         #endregion
 
         #region Constructor
+
         public Matrix(int rows, int cols)
         {
-            if (rows < 0 || cols < 0)
+            if (rows <= 0 || cols <= 0)
                 throw new ArgumentException("Matrix dimensions cannot be smaller than 0");
 
             this.rows = rows;
@@ -44,20 +48,37 @@ namespace Conway.Classes
 
         public void DrawBoardDimension()
         {
-            int i, j;                     
+            SetupBoard();
+
+            InternalDrawBoard();
+        }
+
+        public void Start()
+        {
+            Thread.Sleep(500);
+            int i, j;         
 
             for (i = 0; i < rows; i++)
             {
-                Random rand = new Random();
+                Console.Write("\n");
 
                 for (j = 0; j < cols; j++)
                 {
-                    var randInt = rand.Next(1,3);
-                    Trace.WriteLine(randInt);                    
-                    _aw.InternalArray[i, j] = cellEnums.GetCellStatusById(randInt);                    
+                    Thread.Sleep(400);                   
+                    Point p = new Point(i, j);
+                    Console.Write("{0}\t", GetNeighbours(p, _aw.InternalArray));
                 }
-            }
 
+                Console.Write("\n\n");
+            }
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        private void InternalDrawBoard()
+        {
             for (i = 0; i < rows; i++)
             {
                 Thread.Sleep(100);
@@ -72,30 +93,20 @@ namespace Conway.Classes
             }
         }
 
-        public void Start()
+        private void SetupBoard()
         {
-            Thread.Sleep(500);
-            int i, j;         
-
             for (i = 0; i < rows; i++)
             {
-                Console.Write("\n");
+                Random rand = new Random();
 
                 for (j = 0; j < cols; j++)
                 {
-                    Thread.Sleep(400);
-                    //Console.Write("{0}\t", arr1[i, j]);
-                    Point p = new Point(i, j);
-                    Console.Write("{0}\t", GetNeighbours(p, _aw.InternalArray));
+                    var randInt = rand.Next(1, 3);
+                    Trace.WriteLine(randInt);
+                    _aw.InternalArray[i, j] = cellEnums.GetCellStatusById(randInt);
                 }
-
-                Console.Write("\n\n");
             }
         }
-
-        #endregion
-
-        #region Private Methods
 
         private string GetNeighbours(Point p, string[,] arr)       
         {

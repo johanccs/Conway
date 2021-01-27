@@ -1,5 +1,7 @@
 ﻿using Conway.Classes;
 using Conway.Enums;
+using Conway.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading;
 
@@ -12,10 +14,18 @@ namespace Conway
         static int rows = 0;
         static int cols = 0;
 
-        private static Matrix matrix; 
+        private static IMatrix matrix;
+        private static IServiceProvider _serviceProvider;
 
         #endregion
 
+        #region Constants
+
+        private const string CONFIRM = "Y";
+
+        #endregion
+
+        #region Public Methods
         static void Main(string[] args)
         {
             StartGame();
@@ -40,23 +50,26 @@ namespace Conway
                     StartGame();
                 }
             }
+
+            DisposeServices();
         }
 
-        #region Private Methods
+        #endregion
 
+        #region Private Methods
         private static void StartGame()
         {
-            PrintHeader();
-
-            GetMatrixDimension();
-
-            var iterations = GetIterationNumber();
+            int iterations = SetupGame();
 
             Console.WriteLine("Setting up matrix board preview. Please wait");
 
+            matrix = _serviceProvider.GetService<IMatrix>();
+
+            Console.WriteLine("\n");
+
             try
             {
-                matrix = new Matrix(rows, cols);
+                matrix.DrawBoardDimension();
             }
             catch (Exception e)
             {
@@ -64,27 +77,48 @@ namespace Conway
                 ExitGraceFullyOnException();
             }
 
-            Console.WriteLine("\n");
+            StartGameAfterConfirmation(iterations);
+        }
 
-            matrix.DrawBoardDimension();
+        private static int SetupGame()
+        {
+            PrintHeader();
 
+            GetMatrixDimension();
+
+            _serviceProvider = RegisterServices();
+
+            var iterations = GetIterationNumber();
+            return iterations;
+        }
+
+        private static void StartGameAfterConfirmation(int iterations)
+        {
             Console.Write("\nPress Y to start the game: ");
-
             var answer = Console.ReadLine();
-            if (answer == "Y" || answer == "y")
+
+            if (answer.ToLower() == CONFIRM.ToLower())
             {
                 for (int x = 1; x <= iterations; x++)
                 {
                     Thread.Sleep(1000);
 
                     Console.Clear();
-                    
+
                     PrintHeader();
                     Console.WriteLine("Matrix board preview");
 
                     PrintIterationMessage(x, iterations);
 
-                    matrix.Start();
+                    try
+                    {
+                        matrix.Start();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                        ExitGraceFullyOnException();
+                    }
                 }
             }
         }
@@ -138,6 +172,28 @@ namespace Conway
             string answer = Console.ReadLine();
 
             return answer;
+        }
+
+        #endregion
+
+        #region Helper Methods
+
+        private static ServiceProvider RegisterServices()
+        {
+            ServiceCollection _serviceCollection = new ServiceCollection();
+
+            _serviceCollection.AddSingleton<IMatrix>(new Matrix(rows,cols));
+
+            return _serviceCollection.BuildServiceProvider();
+        }
+
+        private static void DisposeServices()
+        {
+            if (_serviceProvider == null)
+                return;
+
+            if (_serviceProvider is IDisposable)
+                ((IDisposable)_serviceProvider).Dispose();
         }
 
         #endregion
